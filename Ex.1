@@ -1,0 +1,64 @@
+import os
+import time
+
+class File:
+    def __init__(self, name, last_modified):
+        self.name = name
+        self.last_modified = last_modified
+
+    def has_changed(self, new_last_modified):
+        return self.last_modified != new_last_modified
+
+class TextFile(File):
+    def __init__(self, name, last_modified):
+        super().__init__(name, last_modified)
+        self.extension = ".txt"
+
+    def __str__(self):
+        return f"{self.name} No Change" if not self.changed else f"{self.name} Changed"
+
+class ImageFile(File):
+    def __init__(self, name, last_modified):
+        super().__init__(name, last_modified)
+        self.extension = ".png"
+
+    def __str__(self):
+        return f"{self.name} No Change" if not self.changed else f"{self.name} Changed"
+
+class PythonFile(File):
+    def __init__(self, name, last_modified):
+        super().__init__(name, last_modified)
+        self.extension = ".py"
+
+    def __str__(self):
+        return f"{self.name} No Change" if not self.changed else f"{self.name} Changed"
+
+class FolderMonitor:
+    def __init__(self, folder_path):
+        self.folder_path = folder_path
+        self.files = []
+
+    def create_snapshot(self):
+        snapshot_time = time.strftime("%Y-%m-%dT%H:%M:%S.%f")
+        for file in os.listdir(self.folder_path):
+            file_path = os.path.join(self.folder_path, file)
+            if os.path.isfile(file_path):
+                last_modified = os.path.getmtime(file_path)
+                if file.endswith(".txt"):
+                    self.files.append(TextFile(file, last_modified))
+                elif file.endswith(".png"):
+                    self.files.append(ImageFile(file, last_modified))
+                elif file.endswith(".py"):
+                    self.files.append(PythonFile(file, last_modified))
+        print(f"Created Snapshot at: {snapshot_time}\n")
+
+    def detect_changes(self):
+        for file in self.files:
+            current_last_modified = os.path.getmtime(os.path.join(self.folder_path, file.name))
+            file.changed = file.has_changed(current_last_modified)
+            print(file)
+
+folder_path = "/C/calculator/Desktop/Lucrari"
+monitor = FolderMonitor(folder_path)
+monitor.create_snapshot()
+monitor.detect_changes()
