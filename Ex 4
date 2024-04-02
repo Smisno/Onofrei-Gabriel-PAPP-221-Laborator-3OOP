@@ -1,0 +1,83 @@
+import os
+import datetime
+import threading
+import schedule
+import time
+
+# 
+folder_path = "/C/computer/Desktop"
+
+
+file_info = {}
+
+def commit():
+    global file_info
+    changed_files = []
+    new_files = []
+    deleted_files = []
+
+    
+    current_files = {}
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            current_files[file_path] = {
+                'modified_time': os.path.getmtime(file_path),
+                'file_size': os.path.getsize(file_path)
+            }
+
+    
+    for file_path, current_data in current_files.items():
+        if file_path not in file_info:
+            new_files.append(os.path.basename(file_path))
+        elif file_info[file_path]['modified_time'] != current_data['modified_time']:
+            changed_files.append(os.path.basename(file_path))
+
+    for file_path in file_info:
+        if file_path not in current_files:
+            deleted_files.append(os.path.basename(file_path))
+
+    
+    file_info = current_files
+
+    
+    if changed_files:
+        print("Changed files:")
+        for file_name in changed_files:
+            print(f"{file_name} - Changed")
+    if new_files:
+        print("New files:")
+        for file_name in new_files:
+            print(f"{file_name} - New File")
+    if deleted_files:
+        print("Deleted files:")
+        for file_name in deleted_files:
+            print(f"{file_name} - Deleted")
+
+    print("Snapshot time updated to:", datetime.datetime.now())
+
+def detect_changes():
+    schedule.every(5).seconds.do(commit)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
+thread = threading.Thread(target=detect_changes)
+thread.start()
+
+
+while True:
+    action = input("Enter action (commit/info/status): ").strip().split()
+    
+    if action[0] == "commit":
+        commit()
+    elif action[0] == "info":
+        if len(action) > 1:
+            info(action[1])
+        else:
+            print("Please provide a filename.")
+    elif action[0] == "status":
+        status()
+    else:
+        print("Invalid action. Please try again.")
