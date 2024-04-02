@@ -1,0 +1,64 @@
+import os
+import datetime
+
+
+folder_path = "/C/Calculator/Desktop/Lucrari"
+
+
+file_info = {}
+
+def commit():
+    global file_info
+    changed_files = []
+    new_files = []
+    deleted_files = []
+
+    
+    current_files = {}
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            current_files[file_path] = {
+                'modified_time': os.path.getmtime(file_path),
+                'file_size': os.path.getsize(file_path)
+            }
+
+    
+    for file_path, current_data in current_files.items():
+        if file_path not in file_info:
+            new_files.append(os.path.basename(file_path))
+        elif file_info[file_path]['modified_time'] != current_data['modified_time']:
+            changed_files.append(os.path.basename(file_path))
+
+    for file_path in file_info:
+        if file_path not in current_files:
+            deleted_files.append(os.path.basename(file_path))
+
+    
+    file_info = current_files
+
+    
+    if changed_files:
+        print("Changed files:")
+        for file_name in changed_files:
+            print(f"{file_name} - Changed")
+    else:
+        print("No changed files.")
+
+    if new_files:
+        print("New files:")
+        for file_name in new_files:
+            print(f"{file_name} - New File")
+    else:
+        print("No new files.")
+
+    if deleted_files:
+        print("Deleted files:")
+        for file_name in deleted_files:
+            print(f"{file_name} - Deleted")
+    else:
+        print("No deleted files.")
+
+    print("Snapshot time updated to:", datetime.datetime.now())
+
+# Main loop and other functions remain the same...
