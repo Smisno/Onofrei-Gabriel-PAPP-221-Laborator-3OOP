@@ -1,0 +1,90 @@
+import os
+import datetime
+
+# Hardcoded folder location
+folder_path = "C/Calculator/Desktop/Lucrari"
+
+# Dictionary to store file information and snapshot time
+file_info = {}
+
+def commit():
+    global file_info
+    file_info = {}
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            file_info[file_path] = {
+                'modified_time': os.path.getmtime(file_path),
+                'file_size': os.path.getsize(file_path)
+            }
+    print("Snapshot time updated to:", datetime.datetime.now())
+
+def info(filename):
+    file_path = os.path.join(folder_path, filename)
+    if os.path.exists(file_path):
+        file_extension = os.path.splitext(filename)[1]
+        if file_extension in ['.png', '.jpg']:
+            image_info(file_path)
+        elif file_extension == '.txt':
+            text_info(file_path)
+        elif file_extension in ['.py', '.java']:
+            program_info(file_path)
+        else:
+            general_info(file_path)
+    else:
+        print("File not found.")
+
+def general_info(file_path):
+    print("File:", os.path.basename(file_path))
+    print("Extension:", os.path.splitext(file_path)[1])
+    print("Created:", datetime.datetime.fromtimestamp(os.path.getctime(file_path)))
+    print("Updated:", datetime.datetime.fromtimestamp(os.path.getmtime(file_path)))
+
+def image_info(file_path):
+    print("File:", os.path.basename(file_path))
+    print("Extension:", os.path.splitext(file_path)[1])
+    size = os.path.getsize(file_path)
+    print("Image size:", size, "bytes")
+
+def text_info(file_path):
+    print("File:", os.path.basename(file_path))
+    print("Extension:", os.path.splitext(file_path)[1])
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        print("Line count:", len(lines))
+        words = sum(len(line.split()) for line in lines)
+        print("Word count:", words)
+        characters = sum(len(line) for line in lines)
+        print("Character count:", characters)
+
+def program_info(file_path):
+    print("File:", os.path.basename(file_path))
+    print("Extension:", os.path.splitext(file_path)[1])
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        print("Line count:", len(lines))
+        # Implement class and method count logic here
+
+def status():
+    print("Status:")
+    for file_path, file_data in file_info.items():
+        current_modified_time = os.path.getmtime(file_path)
+        if file_data['modified_time'] != current_modified_time:
+            print(f"{os.path.basename(file_path)} has been modified since last snapshot.")
+    print("End of status report.")
+
+# Main loop
+while True:
+    action = input("Enter action (commit/info/status): ").strip().split()
+    
+    if action[0] == "commit":
+        commit()
+    elif action[0] == "info":
+        if len(action) > 1:
+            info(action[1])
+        else:
+            print("Please provide a filename.")
+    elif action[0] == "status":
+        status()
+    else:
+        print("Invalid action. Please try again.")
